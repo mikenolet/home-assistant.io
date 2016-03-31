@@ -82,3 +82,23 @@ automation:
       service: script.foscam_off
 ```
 
+Newer Foscam cameras (Ones that use the Ambarella chipset) use differnt CGI commands to enable/disable motion detection and recording functions. Main difference is that the SetMotionDetectConfig now has a trsiling 1 in the statement so it is now setMotionDetectConfig1.  Sample statement below.
+```
+foscam_record_on: 'curl -k "https://<IP address>:443/cgi-bin/CGIProxy.fcgi?cmd=setMotionDetectConfig1&isEnable=1&linkage=8&snapInterval=1&triggerInterval=0&isMovAlarmEnable=1&isPirAlarmEnable=0&schedule0=281474976710655&schedule1=281474976710655&schedule2=281474976710655&schedule3=281474976710655&schedule4=281474976710655&schedule5=281474976710655&schedule6=281474976710655&x1=0&y1=0&width1=10000&height1=10000&threshold1=4&sensitivity1=2&valid1=0&x2=0&y2=0&width2=10000&height2=10000&threshold2=6&sensitivity2=4&valid2=0&x3=0&y3=0&width3=10000&height3=10000&threshold3=4&sensitivity3=0&valid3=1&usr=admin&pwd=<password>"'
+```
+For automation I have the camera pan to the set point and wait for 60 seconds before enabling the recording function.  If enabled at the on set the pan is detected as motion and recording is produced.  The below script references a lot of the code referenced above.
+```
+ foscam_on:
+   sequence:
+   - execute_service: switch.turn_off
+     service_data:
+       entity_id: switch.foscam_motion
+   - service: shell_command.foscam_turn_on
+   - delay:
+       seconds: 60
+   - execute_service: switch.turn_on
+     service_data:
+       entity_id: switch.foscam_motion
+   - service: shell_command.foscam_record_on
+   ```
+   
